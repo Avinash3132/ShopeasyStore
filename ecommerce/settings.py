@@ -28,19 +28,17 @@ SECRET_KEY = os.environ.get(
 DEBUG = os.environ.get("DEBUG", "True").lower() in ("1", "true", "yes", "on")
 
 ALLOWED_HOSTS = [
-    host.strip()
-    for host in os.environ.get(
-        "ALLOWED_HOSTS",
-        "127.0.0.1,localhost",
-    ).split(",")
-    if host.strip()
+    "localhost",
+    "127.0.0.1",
 ]
 
-CSRF_TRUSTED_ORIGINS = [
-    origin.strip()
-    for origin in os.environ.get("CSRF_TRUSTED_ORIGINS", "").split(",")
-    if origin.strip()
-]
+if os.environ.get("RENDER_EXTERNAL_HOSTNAME"):
+    ALLOWED_HOSTS.append(os.environ["RENDER_EXTERNAL_HOSTNAME"])
+
+CSRF_TRUSTED_ORIGINS = []
+
+if os.environ.get("RENDER_EXTERNAL_URL"):
+    CSRF_TRUSTED_ORIGINS.append(os.environ["RENDER_EXTERNAL_URL"])
 
 
 # ---------------------------------------------------------------------------
