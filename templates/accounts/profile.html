@@ -1,0 +1,59 @@
+{% extends 'base.html' %}
+{% block title %}My Profile{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div class="container">
+    <nav aria-label="breadcrumb">
+      <ol class="breadcrumb">
+        <li class="breadcrumb-item">
+          <a href="{% url 'store:product_list' %}">Home</a>
+        </li>
+        <li class="breadcrumb-item active">My Profile</li>
+      </ol>
+    </nav>
+  </div>
+</div>
+
+<section class="py-5">
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-lg-6">
+        <div style="background:var(--white); border-radius:var(--radius);
+                    box-shadow:var(--shadow-sm); padding:2rem;
+                    text-align:center;">
+
+          <div style="width:80px; height:80px; border-radius:50%;
+                      background:linear-gradient(135deg, #2563eb, #0ea5e9);
+                      display:flex; align-items:center; justify-content:center;
+                      font-size:2rem; color:white; margin:0 auto 1rem;">
+            {{ user.first_name|first|upper }}{{ user.last_name|first|upper }}
+          </div>
+
+          <h4 style="font-family:'Poppins',sans-serif; font-weight:700;">
+            {{ user.get_full_name|default:user.username }}
+          </h4>
+          <p style="color:var(--gray-500);">{{ user.email }}</p>
+
+          <hr style="border-color:var(--gray-200); margin:1.5rem 0;">
+
+          <div style="display:flex; justify-content:center; gap:1rem;
+                      flex-wrap:wrap;">
+            <a href="{% url 'orders:order_list' %}" class="btn-primary-lg">
+              <i class="bi bi-bag"></i> My Orders
+            </a>
+            <a href="{% url 'accounts:logout' %}"
+               style="background:var(--gray-100); color:var(--gray-700);
+                      border:none; padding:0.85rem 2rem; border-radius:var(--radius-sm);
+                      font-weight:700; font-size:1rem; cursor:pointer;
+                      text-decoration:none; display:inline-flex;
+                      align-items:center; gap:0.5rem;">
+              <i class="bi bi-box-arrow-right"></i> Logout
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

@@ -1,0 +1,626 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ product.name }}{% endblock %}
+
+{% block extra_css %}
+<style>
+/* ── Gallery Styles ── */
+.gallery-main {
+  position: relative;
+  border-radius: var(--radius);
+  overflow: hidden;
+  background: var(--white);
+  box-shadow: var(--shadow-md);
+  aspect-ratio: 1 / 1;
+  cursor: zoom-in;
+}
+
+.gallery-main img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.4s ease;
+}
+
+.gallery-main:hover img {
+  transform: scale(1.04);
+}
+
+.gallery-main-placeholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 7rem;
+  background: linear-gradient(135deg, var(--gray-100), var(--gray-200));
+}
+
+.gallery-thumbnails {
+  display: flex;
+  gap: 0.6rem;
+  margin-top: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.gallery-thumb {
+  width: 72px;
+  height: 72px;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  cursor: pointer;
+  border: 2px solid var(--gray-200);
+  transition: var(--transition);
+  flex-shrink: 0;
+}
+
+.gallery-thumb:hover {
+  border-color: var(--primary);
+  transform: translateY(-2px);
+}
+
+.gallery-thumb.active {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 2px rgba(37,99,235,0.25);
+}
+
+.gallery-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* ── Lightbox ── */
+.lightbox-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.92);
+  z-index: 9999;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+
+.lightbox-overlay.active {
+  display: flex;
+}
+
+.lightbox-content {
+  position: relative;
+  max-width: 90vw;
+  max-height: 90vh;
+}
+
+.lightbox-content img {
+  max-width: 100%;
+  max-height: 85vh;
+  object-fit: contain;
+  border-radius: var(--radius);
+  box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+}
+
+.lightbox-close {
+  position: fixed;
+  top: 1rem;
+  right: 1.5rem;
+  background: rgba(255,255,255,0.15);
+  border: none;
+  color: white;
+  font-size: 1.75rem;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: var(--transition);
+  backdrop-filter: blur(10px);
+}
+
+.lightbox-close:hover {
+  background: rgba(255,255,255,0.3);
+}
+
+.lightbox-nav {
+  position: fixed;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(255,255,255,0.15);
+  border: none;
+  color: white;
+  font-size: 1.5rem;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: var(--transition);
+  backdrop-filter: blur(10px);
+}
+
+.lightbox-nav:hover { background: rgba(255,255,255,0.3); }
+.lightbox-prev { left: 1rem; }
+.lightbox-next { right: 1rem; }
+
+.lightbox-counter {
+  position: fixed;
+  bottom: 1.5rem;
+  left: 50%;
+  transform: translateX(-50%);
+  color: rgba(255,255,255,0.7);
+  font-size: 0.9rem;
+  background: rgba(0,0,0,0.4);
+  padding: 4px 14px;
+  border-radius: 50px;
+}
+
+.lightbox-thumbs {
+  position: fixed;
+  bottom: 3.5rem;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 0.5rem;
+  max-width: 90vw;
+  overflow-x: auto;
+  padding: 0.5rem;
+}
+
+.lightbox-thumb-item {
+  width: 52px;
+  height: 52px;
+  border-radius: 6px;
+  overflow: hidden;
+  cursor: pointer;
+  border: 2px solid rgba(255,255,255,0.2);
+  flex-shrink: 0;
+  transition: var(--transition);
+}
+
+.lightbox-thumb-item.active {
+  border-color: white;
+}
+
+.lightbox-thumb-item img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* ── Zoom Badge ── */
+.zoom-hint {
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
+  background: rgba(0,0,0,0.5);
+  color: white;
+  font-size: 0.75rem;
+  padding: 4px 10px;
+  border-radius: 50px;
+  backdrop-filter: blur(4px);
+  pointer-events: none;
+  transition: var(--transition);
+}
+
+.gallery-main:hover .zoom-hint {
+  opacity: 0;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+
+<!-- Page Header -->
+<div class="page-header">
+  <div class="container">
+    <nav aria-label="breadcrumb">
+      <ol class="breadcrumb">
+        <li class="breadcrumb-item">
+          <a href="{% url 'store:product_list' %}">Home</a>
+        </li>
+        <li class="breadcrumb-item">
+          <a href="{{ product.category.get_absolute_url }}">
+            {{ product.category.name }}
+          </a>
+        </li>
+        <li class="breadcrumb-item active">{{ product.name }}</li>
+      </ol>
+    </nav>
+  </div>
+</div>
+
+<section class="py-4">
+  <div class="container">
+    <div class="row g-4">
+
+      <!-- ── LEFT: Image Gallery ── -->
+      <div class="col-lg-5">
+
+        <!-- Main Image -->
+        <div class="gallery-main" id="galleryMain"
+             onclick="openLightbox(currentIndex)">
+          {% if product.image %}
+            <img src="{{ product.image.url }}"
+                 alt="{{ product.name }}"
+                 id="mainImage"/>
+          {% elif product.gallery_images.first %}
+            <img src="{{ product.gallery_images.first.image.url }}"
+                 alt="{{ product.name }}"
+                 id="mainImage"/>
+          {% else %}
+            <div class="gallery-main-placeholder">
+              {% if 'electronic' in product.category.name|lower %}📱
+              {% elif 'cloth' in product.category.name|lower %}👗
+              {% elif 'book' in product.category.name|lower %}📚
+              {% else %}🛍️{% endif %}
+            </div>
+          {% endif %}
+          <div class="zoom-hint">
+            <i class="bi bi-zoom-in me-1"></i> Click to zoom
+          </div>
+        </div>
+
+        <!-- Thumbnails -->
+        {% with gallery=product.gallery_images.all %}
+        {% if product.image or gallery %}
+        <div class="gallery-thumbnails" id="galleryThumbs">
+
+          <!-- Main product image as first thumb -->
+          {% if product.image %}
+          <div class="gallery-thumb active"
+               onclick="switchImage('{{ product.image.url }}', this, 0)">
+            <img src="{{ product.image.url }}" alt="{{ product.name }}"/>
+          </div>
+          {% endif %}
+
+          <!-- Gallery images -->
+          {% for img in gallery %}
+          <div class="gallery-thumb"
+               onclick="switchImage('{{ img.image.url }}', this, {{ forloop.counter }})">
+            <img src="{{ img.image.url }}"
+                 alt="{{ img.alt_text|default:product.name }}"/>
+          </div>
+          {% endfor %}
+
+        </div>
+        {% endif %}
+        {% endwith %}
+
+        <!-- Image Count Badge -->
+        {% with total=product.gallery_images.count %}
+        {% if total > 0 %}
+        <div style="margin-top:0.6rem; font-size:0.82rem; color:var(--gray-500);">
+          <i class="bi bi-images me-1"></i>
+          {{ total|add:1 }} image{{ total|add:1|pluralize }} total
+          &nbsp;·&nbsp;
+          <span style="color:var(--primary); cursor:pointer;"
+                onclick="openLightbox(0)">
+            View all
+          </span>
+        </div>
+        {% endif %}
+        {% endwith %}
+
+      </div>
+
+      <!-- ── RIGHT: Product Info ── -->
+      <div class="col-lg-7">
+        <div class="product-detail-info">
+
+          <div class="product-category mb-2">
+            <a href="{{ product.category.get_absolute_url }}"
+               style="color:var(--primary); text-decoration:none;">
+              <i class="bi bi-tag me-1"></i>{{ product.category.name }}
+            </a>
+          </div>
+
+          <h1 style="font-family:'Poppins',sans-serif; font-weight:700;
+                     font-size:1.75rem; margin-bottom:1rem;">
+            {{ product.name }}
+          </h1>
+
+          <!-- Price -->
+          <div class="d-flex align-items-center gap-3 mb-3">
+            <span class="product-detail-price">${{ product.price }}</span>
+            {% if product.old_price %}
+              <span style="font-size:1.1rem; color:var(--gray-500);
+                           text-decoration:line-through;">
+                ${{ product.old_price }}
+              </span>
+              <span style="background:#fee2e2; color:#991b1b; font-size:0.8rem;
+                           font-weight:700; padding:3px 10px; border-radius:50px;">
+                -{{ product.discount_percentage }}% OFF
+              </span>
+            {% endif %}
+          </div>
+
+          <!-- Stock -->
+          <div class="mb-3">
+            {% if product.is_in_stock %}
+              <span class="stock-badge stock-in">
+                <i class="bi bi-check-circle-fill"></i>
+                In Stock ({{ product.stock }} available)
+              </span>
+            {% else %}
+              <span class="stock-badge stock-out">
+                <i class="bi bi-x-circle-fill"></i> Out of Stock
+              </span>
+            {% endif %}
+          </div>
+
+          <!-- Description -->
+          {% if product.description %}
+          <div class="mb-4"
+               style="color:var(--gray-700); line-height:1.75;
+                      border-top:1px solid var(--gray-200); padding-top:1rem;">
+            {{ product.description|linebreaks }}
+          </div>
+          {% endif %}
+
+          <!-- Add to Cart -->
+          {% if product.is_in_stock %}
+          <form action="{% url 'cart:add_to_cart' product.id %}" method="post">
+            {% csrf_token %}
+            <div class="d-flex align-items-center gap-3 flex-wrap">
+              <div>
+                <label class="form-label small fw-bold text-muted mb-1">
+                  Quantity
+                </label>
+                <div class="qty-control">
+                  <button type="button" class="qty-btn" id="qty-minus">−</button>
+                  <input type="number" name="quantity" id="quantity"
+                         class="qty-input" value="1" min="1"
+                         max="{{ product.stock }}"/>
+                  <button type="button" class="qty-btn" id="qty-plus">+</button>
+                </div>
+              </div>
+              <div style="margin-top:1.4rem;">
+                <button type="submit" class="btn-primary-lg">
+                  <i class="bi bi-cart-plus"></i> Add to Cart
+                </button>
+              </div>
+            </div>
+          </form>
+          {% else %}
+          <button class="btn-primary-lg" disabled
+                  style="background:var(--gray-300); cursor:not-allowed;">
+            <i class="bi bi-x-circle"></i> Out of Stock
+          </button>
+          {% endif %}
+
+          <!-- Trust Badges -->
+          <div class="mt-4 pt-3"
+               style="border-top:1px solid var(--gray-200);">
+            <div class="row g-2">
+              <div class="col-6">
+                <div style="display:flex; align-items:center; gap:0.5rem;
+                            font-size:0.82rem; color:var(--gray-500);">
+                  <i class="bi bi-truck"
+                     style="color:var(--primary); font-size:1rem;"></i>
+                  Free shipping over $50
+                </div>
+              </div>
+              <div class="col-6">
+                <div style="display:flex; align-items:center; gap:0.5rem;
+                            font-size:0.82rem; color:var(--gray-500);">
+                  <i class="bi bi-arrow-return-left"
+                     style="color:var(--primary); font-size:1rem;"></i>
+                  30-day returns
+                </div>
+              </div>
+              <div class="col-6">
+                <div style="display:flex; align-items:center; gap:0.5rem;
+                            font-size:0.82rem; color:var(--gray-500);">
+                  <i class="bi bi-shield-check"
+                     style="color:var(--primary); font-size:1rem;"></i>
+                  Secure checkout
+                </div>
+              </div>
+              <div class="col-6">
+                <div style="display:flex; align-items:center; gap:0.5rem;
+                            font-size:0.82rem; color:var(--gray-500);">
+                  <i class="bi bi-headset"
+                     style="color:var(--primary); font-size:1rem;"></i>
+                  24/7 support
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Related Products ── -->
+    {% if related_products %}
+    <div class="mt-5">
+      <div class="section-title">Related Products</div>
+      <div class="section-divider"></div>
+      <div class="row g-4">
+        {% for rp in related_products %}
+        <div class="col-sm-6 col-lg-3">
+          <div class="product-card">
+            <div class="product-img-wrap">
+              {% if rp.image %}
+                <img src="{{ rp.image.url }}"
+                     alt="{{ rp.name }}" loading="lazy"/>
+              {% else %}
+                <div class="product-img-placeholder">🛍️</div>
+              {% endif %}
+            </div>
+            <div class="product-body">
+              <div class="product-category">{{ rp.category.name }}</div>
+              <div class="product-name">
+                <a href="{{ rp.get_absolute_url }}">{{ rp.name }}</a>
+              </div>
+              <div class="product-price-wrap">
+                <span class="product-price">${{ rp.price }}</span>
+                {% if rp.old_price %}
+                  <span class="product-old-price">${{ rp.old_price }}</span>
+                {% endif %}
+              </div>
+              <a href="{{ rp.get_absolute_url }}" class="btn-add-cart">
+                <i class="bi bi-eye me-1"></i> View Product
+              </a>
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+    {% endif %}
+
+  </div>
+</section>
+
+<!-- ── Lightbox ── -->
+<div class="lightbox-overlay" id="lightbox" onclick="closeLightboxOnOverlay(event)">
+  <div class="lightbox-content">
+    <img src="" alt="" id="lightboxImg"/>
+  </div>
+
+  <button class="lightbox-close" onclick="closeLightbox()">
+    <i class="bi bi-x"></i>
+  </button>
+
+  <button class="lightbox-nav lightbox-prev" onclick="lightboxNav(-1)">
+    <i class="bi bi-chevron-left"></i>
+  </button>
+  <button class="lightbox-nav lightbox-next" onclick="lightboxNav(1)">
+    <i class="bi bi-chevron-right"></i>
+  </button>
+
+  <div class="lightbox-counter" id="lightboxCounter">1 / 1</div>
+
+  <div class="lightbox-thumbs" id="lightboxThumbs"></div>
+</div>
+
+{% endblock %}
+
+
+{% block extra_js %}
+<script>
+// ── Build image list from page ──
+const images = [];
+
+{% if product.image %}
+images.push({
+  src: '{{ product.image.url }}',
+  alt: '{{ product.name }}'
+});
+{% endif %}
+
+{% for img in product.gallery_images.all %}
+images.push({
+  src: '{{ img.image.url }}',
+  alt: '{{ img.alt_text|default:product.name }}'
+});
+{% endfor %}
+
+let currentIndex = 0;
+
+// ── Switch thumbnail ──
+function switchImage(src, thumbEl, index) {
+  currentIndex = index;
+
+  // Update main image
+  const mainImg = document.getElementById('mainImage');
+  if (mainImg) {
+    mainImg.style.opacity = '0';
+    mainImg.style.transition = 'opacity 0.2s';
+    setTimeout(() => {
+      mainImg.src = src;
+      mainImg.style.opacity = '1';
+    }, 150);
+  }
+
+  // Update active thumb
+  document.querySelectorAll('.gallery-thumb').forEach(t => {
+    t.classList.remove('active');
+  });
+  if (thumbEl) thumbEl.classList.add('active');
+}
+
+// ── Lightbox ──
+function openLightbox(index) {
+  if (images.length === 0) return;
+  currentIndex = index;
+  updateLightbox();
+  document.getElementById('lightbox').classList.add('active');
+  document.body.style.overflow = 'hidden';
+  buildLightboxThumbs();
+}
+
+function closeLightbox() {
+  document.getElementById('lightbox').classList.remove('active');
+  document.body.style.overflow = '';
+}
+
+function closeLightboxOnOverlay(e) {
+  if (e.target.id === 'lightbox') closeLightbox();
+}
+
+function lightboxNav(dir) {
+  currentIndex = (currentIndex + dir + images.length) % images.length;
+  updateLightbox();
+}
+
+function updateLightbox() {
+  const img = images[currentIndex];
+  const lbImg = document.getElementById('lightboxImg');
+  lbImg.style.opacity = '0';
+  lbImg.style.transition = 'opacity 0.2s';
+  setTimeout(() => {
+    lbImg.src = img.src;
+    lbImg.alt = img.alt;
+    lbImg.style.opacity = '1';
+  }, 150);
+
+  document.getElementById('lightboxCounter').textContent =
+    `${currentIndex + 1} / ${images.length}`;
+
+  // Update lightbox thumbs
+  document.querySelectorAll('.lightbox-thumb-item').forEach((t, i) => {
+    t.classList.toggle('active', i === currentIndex);
+  });
+}
+
+function buildLightboxThumbs() {
+  const container = document.getElementById('lightboxThumbs');
+  container.innerHTML = '';
+  images.forEach((img, i) => {
+    const div = document.createElement('div');
+    div.className = 'lightbox-thumb-item' + (i === currentIndex ? ' active' : '');
+    div.innerHTML = `<img src="${img.src}" alt="${img.alt}"/>`;
+    div.onclick = () => {
+      currentIndex = i;
+      updateLightbox();
+    };
+    container.appendChild(div);
+  });
+}
+
+// ── Keyboard Navigation ──
+document.addEventListener('keydown', function(e) {
+  const lb = document.getElementById('lightbox');
+  if (!lb.classList.contains('active')) return;
+  if (e.key === 'Escape') closeLightbox();
+  if (e.key === 'ArrowLeft') lightboxNav(-1);
+  if (e.key === 'ArrowRight') lightboxNav(1);
+});
+
+// ── Hide nav buttons if only 1 image ──
+document.addEventListener('DOMContentLoaded', function() {
+  if (images.length <= 1) {
+    document.querySelector('.lightbox-prev').style.display = 'none';
+    document.querySelector('.lightbox-next').style.display = 'none';
+    document.getElementById('lightboxCounter').style.display = 'none';
+  }
+});
+</script>
+{% endblock %}

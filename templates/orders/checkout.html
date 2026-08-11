@@ -1,0 +1,249 @@
+{% extends 'base.html' %}
+{% block title %}Checkout{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div class="container">
+    <nav aria-label="breadcrumb">
+      <ol class="breadcrumb">
+        <li class="breadcrumb-item">
+          <a href="{% url 'store:product_list' %}">Home</a>
+        </li>
+        <li class="breadcrumb-item">
+          <a href="{% url 'cart:cart_detail' %}">Cart</a>
+        </li>
+        <li class="breadcrumb-item active">Checkout</li>
+      </ol>
+    </nav>
+  </div>
+</div>
+
+<section class="py-4">
+  <div class="container">
+    <form method="post">
+      {% csrf_token %}
+      <div class="row g-4">
+
+        <!-- Left: Shipping Form -->
+        <div class="col-lg-7">
+          <div style="background:var(--white); border-radius:var(--radius);
+                      box-shadow:var(--shadow-sm); padding:2rem;
+                      border:1px solid var(--gray-200);">
+
+            <h5 style="font-family:'Poppins',sans-serif; font-weight:700;
+                       margin-bottom:1.5rem; padding-bottom:1rem;
+                       border-bottom:2px solid var(--gray-200);">
+              <i class="bi bi-geo-alt me-2" style="color:var(--primary);"></i>
+              Shipping Information
+            </h5>
+
+            <!-- Name Row -->
+            <div class="row g-3 mb-3">
+              <div class="col-sm-6">
+                <label class="form-label fw-bold small">First Name *</label>
+                {{ form.first_name }}
+                {% if form.first_name.errors %}
+                  <div style="color:var(--danger); font-size:0.8rem;">
+                    {{ form.first_name.errors.0 }}
+                  </div>
+                {% endif %}
+              </div>
+              <div class="col-sm-6">
+                <label class="form-label fw-bold small">Last Name *</label>
+                {{ form.last_name }}
+                {% if form.last_name.errors %}
+                  <div style="color:var(--danger); font-size:0.8rem;">
+                    {{ form.last_name.errors.0 }}
+                  </div>
+                {% endif %}
+              </div>
+            </div>
+
+            <!-- Email & Phone -->
+            <div class="row g-3 mb-3">
+              <div class="col-sm-6">
+                <label class="form-label fw-bold small">Email *</label>
+                {{ form.email }}
+                {% if form.email.errors %}
+                  <div style="color:var(--danger); font-size:0.8rem;">
+                    {{ form.email.errors.0 }}
+                  </div>
+                {% endif %}
+              </div>
+              <div class="col-sm-6">
+                <label class="form-label fw-bold small">Phone *</label>
+                {{ form.phone }}
+                {% if form.phone.errors %}
+                  <div style="color:var(--danger); font-size:0.8rem;">
+                    {{ form.phone.errors.0 }}
+                  </div>
+                {% endif %}
+              </div>
+            </div>
+
+            <!-- Address -->
+            <div class="mb-3">
+              <label class="form-label fw-bold small">Street Address *</label>
+              {{ form.address }}
+              {% if form.address.errors %}
+                <div style="color:var(--danger); font-size:0.8rem;">
+                  {{ form.address.errors.0 }}
+                </div>
+              {% endif %}
+            </div>
+
+            <!-- City State ZIP -->
+            <div class="row g-3 mb-3">
+              <div class="col-sm-4">
+                <label class="form-label fw-bold small">City *</label>
+                {{ form.city }}
+              </div>
+              <div class="col-sm-4">
+                <label class="form-label fw-bold small">State *</label>
+                {{ form.state }}
+              </div>
+              <div class="col-sm-4">
+                <label class="form-label fw-bold small">ZIP Code *</label>
+                {{ form.zip_code }}
+              </div>
+            </div>
+
+            <!-- Country -->
+            <div class="mb-3">
+              <label class="form-label fw-bold small">Country *</label>
+              {{ form.country }}
+            </div>
+
+            <!-- Notes -->
+            <div class="mb-0">
+              <label class="form-label fw-bold small">
+                Order Notes (optional)
+              </label>
+              {{ form.notes }}
+            </div>
+          </div>
+
+          <!-- Payment Info (Static UI) -->
+          <div style="background:var(--white); border-radius:var(--radius);
+                      box-shadow:var(--shadow-sm); padding:2rem;
+                      border:1px solid var(--gray-200); margin-top:1.5rem;">
+            <h5 style="font-family:'Poppins',sans-serif; font-weight:700;
+                       margin-bottom:1.5rem; padding-bottom:1rem;
+                       border-bottom:2px solid var(--gray-200);">
+              <i class="bi bi-credit-card me-2" style="color:var(--primary);"></i>
+              Payment Method
+            </h5>
+            <div style="background:var(--primary-light); border:2px solid var(--primary);
+                        border-radius:var(--radius-sm); padding:1rem;
+                        display:flex; align-items:center; gap:0.75rem;">
+              <input type="radio" checked disabled/>
+              <div>
+                <div style="font-weight:600; color:var(--primary);">
+                  Cash on Delivery
+                </div>
+                <div style="font-size:0.82rem; color:var(--gray-500);">
+                  Pay when your order arrives
+                </div>
+              </div>
+            </div>
+            <p style="font-size:0.82rem; color:var(--gray-500); margin-top:0.75rem; margin-bottom:0;">
+              <i class="bi bi-shield-check me-1 text-success"></i>
+              Your order is secured and will be processed immediately.
+            </p>
+          </div>
+        </div>
+
+        <!-- Right: Order Summary -->
+        <div class="col-lg-5">
+          <div style="background:var(--white); border-radius:var(--radius);
+                      box-shadow:var(--shadow-sm); padding:1.5rem;
+                      border:1px solid var(--gray-200); position:sticky; top:80px;">
+
+            <h5 style="font-family:'Poppins',sans-serif; font-weight:700;
+                       margin-bottom:1.25rem; padding-bottom:1rem;
+                       border-bottom:2px solid var(--gray-200);">
+              <i class="bi bi-receipt me-2" style="color:var(--primary);"></i>
+              Order Summary
+            </h5>
+
+            <!-- Items -->
+            <div style="max-height:300px; overflow-y:auto;
+                        margin-bottom:1rem;">
+              {% for item in cart %}
+              <div style="display:flex; gap:0.85rem; align-items:center;
+                          padding:0.75rem 0; border-bottom:1px solid var(--gray-100);">
+                <div style="width:55px; height:55px; border-radius:var(--radius-sm);
+                            overflow:hidden; background:var(--gray-100); flex-shrink:0;">
+                  {% if item.product.image %}
+                    <img src="{{ item.product.image.url }}"
+                         style="width:100%; height:100%; object-fit:cover;"/>
+                  {% else %}
+                    <div style="width:100%; height:100%; display:flex;
+                                align-items:center; justify-content:center;
+                                font-size:1.5rem;">🛍️</div>
+                  {% endif %}
+                </div>
+                <div style="flex:1; min-width:0;">
+                  <div style="font-weight:600; font-size:0.88rem;
+                              white-space:nowrap; overflow:hidden;
+                              text-overflow:ellipsis;">
+                    {{ item.product.name }}
+                  </div>
+                  <div style="font-size:0.8rem; color:var(--gray-500);">
+                    Qty: {{ item.quantity }} × ${{ item.price }}
+                  </div>
+                </div>
+                <div style="font-weight:700; font-size:0.9rem;
+                            color:var(--primary); flex-shrink:0;">
+                  ${{ item.total_price }}
+                </div>
+              </div>
+              {% endfor %}
+            </div>
+
+            <!-- Totals -->
+            <div style="display:flex; flex-direction:column; gap:0.6rem;
+                        margin-bottom:1rem;">
+              <div style="display:flex; justify-content:space-between;
+                          font-size:0.9rem;">
+                <span style="color:var(--gray-500);">Subtotal</span>
+                <span style="font-weight:600;">${{ cart.get_total_price }}</span>
+              </div>
+              <div style="display:flex; justify-content:space-between;
+                          font-size:0.9rem;">
+                <span style="color:var(--gray-500);">Shipping</span>
+                <span style="color:var(--success); font-weight:600;">
+                  {% if cart.get_total_price >= 50 %}Free{% else %}$5.00{% endif %}
+                </span>
+              </div>
+            </div>
+
+            <div style="display:flex; justify-content:space-between;
+                        padding:1rem 0; border-top:2px solid var(--gray-200);
+                        margin-bottom:1.25rem;">
+              <span style="font-weight:700; font-size:1.05rem;">Total</span>
+              <span style="font-family:'Poppins',sans-serif; font-weight:800;
+                           font-size:1.35rem; color:var(--primary);">
+                ${{ cart.get_total_price }}
+              </span>
+            </div>
+
+            <!-- Place Order Button -->
+            <button type="submit" class="btn-primary-lg"
+                    style="width:100%; justify-content:center; font-size:1.05rem;">
+              <i class="bi bi-bag-check"></i> Place Order
+            </button>
+
+            <a href="{% url 'cart:cart_detail' %}"
+               style="display:block; text-align:center; margin-top:0.85rem;
+                      color:var(--gray-500); font-size:0.85rem; text-decoration:none;">
+              <i class="bi bi-arrow-left me-1"></i> Back to Cart
+            </a>
+          </div>
+        </div>
+
+      </div>
+    </form>
+  </div>
+</section>
+{% endblock %}

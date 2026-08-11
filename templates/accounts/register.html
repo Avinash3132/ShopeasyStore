@@ -1,0 +1,137 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Create Account{% endblock %}
+
+{% block content %}
+<section style="min-height:80vh; display:flex; align-items:center;
+                background:linear-gradient(135deg, #f0f4ff 0%, #e8f0fe 100%);
+                padding: 3rem 0;">
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-md-8 col-lg-6">
+
+        <!-- Card -->
+        <div style="background:var(--white); border-radius:var(--radius);
+                    box-shadow:var(--shadow-lg); overflow:hidden;">
+
+          <!-- Card Header -->
+          <div style="background:linear-gradient(135deg, #1e3a8a, #2563eb);
+                      padding:2rem; text-align:center; color:white;">
+            <div style="font-size:3rem; margin-bottom:0.5rem;">👤</div>
+            <h3 style="font-family:'Poppins',sans-serif; font-weight:700;
+                       margin:0;">Create Account</h3>
+            <p style="opacity:0.85; margin:0.5rem 0 0; font-size:0.9rem;">
+              Join ShopEasy and start shopping today
+            </p>
+          </div>
+
+          <!-- Card Body -->
+          <div style="padding:2rem;">
+            <form method="post" novalidate>
+              {% csrf_token %}
+
+              <!-- Name Row -->
+              <div class="row g-3 mb-3">
+                <div class="col-sm-6">
+                  <label class="form-label fw-600 small">
+                    First Name <span style="color:var(--danger);">*</span>
+                  </label>
+                  {{ form.first_name }}
+                  {% if form.first_name.errors %}
+                    <div style="color:var(--danger); font-size:0.8rem; margin-top:0.3rem;">
+                      {{ form.first_name.errors.0 }}
+                    </div>
+                  {% endif %}
+                </div>
+                <div class="col-sm-6">
+                  <label class="form-label fw-600 small">
+                    Last Name <span style="color:var(--danger);">*</span>
+                  </label>
+                  {{ form.last_name }}
+                  {% if form.last_name.errors %}
+                    <div style="color:var(--danger); font-size:0.8rem; margin-top:0.3rem;">
+                      {{ form.last_name.errors.0 }}
+                    </div>
+                  {% endif %}
+                </div>
+              </div>
+
+              <!-- Email -->
+              <div class="mb-3">
+                <label class="form-label fw-600 small">
+                  Email Address <span style="color:var(--danger);">*</span>
+                </label>
+                {{ form.email }}
+                {% if form.email.errors %}
+                  <div style="color:var(--danger); font-size:0.8rem; margin-top:0.3rem;">
+                    {{ form.email.errors.0 }}
+                  </div>
+                {% endif %}
+              </div>
+
+              <!-- Username -->
+              <div class="mb-3">
+                <label class="form-label fw-600 small">
+                  Username <span style="color:var(--danger);">*</span>
+                </label>
+                {{ form.username }}
+                {% if form.username.errors %}
+                  <div style="color:var(--danger); font-size:0.8rem; margin-top:0.3rem;">
+                    {{ form.username.errors.0 }}
+                  </div>
+                {% endif %}
+              </div>
+
+              <!-- Password -->
+              <div class="mb-3">
+                <label class="form-label fw-600 small">
+                  Password <span style="color:var(--danger);">*</span>
+                </label>
+                {{ form.password1 }}
+                {% if form.password1.errors %}
+                  <div style="color:var(--danger); font-size:0.8rem; margin-top:0.3rem;">
+                    {{ form.password1.errors.0 }}
+                  </div>
+                {% endif %}
+              </div>
+
+              <!-- Confirm Password -->
+              <div class="mb-4">
+                <label class="form-label fw-600 small">
+                  Confirm Password <span style="color:var(--danger);">*</span>
+                </label>
+                {{ form.password2 }}
+                {% if form.password2.errors %}
+                  <div style="color:var(--danger); font-size:0.8rem; margin-top:0.3rem;">
+                    {{ form.password2.errors.0 }}
+                  </div>
+                {% endif %}
+              </div>
+
+              <!-- Submit -->
+              <button type="submit" class="btn-primary-lg"
+                      style="width:100%; justify-content:center; font-size:1rem;">
+                <i class="bi bi-person-plus"></i> Create Account
+              </button>
+            </form>
+
+            <!-- Login Link -->
+            <div style="text-align:center; margin-top:1.5rem;
+                        padding-top:1.5rem; border-top:1px solid var(--gray-200);
+                        font-size:0.9rem; color:var(--gray-500);">
+              Already have an account?
+              <a href="{% url 'accounts:login' %}"
+                 style="color:var(--primary); font-weight:600;
+                        text-decoration:none;">
+                Sign In
+              </a>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</section>
+{% endblock %}

@@ -1,0 +1,353 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}
+  {% if query %}Search: {{ query }}
+  {% elif category %}{{ category.name }}
+  {% else %}All Products{% endif %}
+{% endblock %}
+
+{% block content %}
+
+{% if not category and not query %}
+<!-- ── Hero ── -->
+<section class="hero">
+  <div class="container">
+    <div class="row align-items-center">
+      <div class="col-lg-7 hero-content">
+        <div class="hero-badge">
+          <i class="bi bi-stars me-1"></i> New arrivals every week
+        </div>
+        <h1>Shop Smarter,<br>Live <span>Better</span></h1>
+        <p>Discover thousands of quality products at unbeatable prices.
+           Fast delivery, easy returns, and amazing deals every day.</p>
+
+        <!-- Search Bar in Hero -->
+        <form method="get" action="{% url 'store:product_list' %}"
+              style="display:flex; gap:0; max-width:480px;
+                     background:white; border-radius:50px;
+                     padding:5px; box-shadow:0 4px 20px rgba(0,0,0,0.15);">
+          <input type="text" name="q" placeholder="Search products..."
+                 value="{{ query }}"
+                 style="flex:1; border:none; outline:none; padding:0.6rem 1rem;
+                        border-radius:50px; font-size:0.95rem; color:var(--dark);
+                        background:transparent;"/>
+          <button type="submit"
+                  style="background:var(--primary); color:white; border:none;
+                         padding:0.6rem 1.4rem; border-radius:50px;
+                         font-weight:600; cursor:pointer; font-size:0.9rem;">
+            <i class="bi bi-search"></i>
+          </button>
+        </form>
+
+        <div class="hero-stats">
+          <div>
+            <span class="hero-stat-num">10K+</span>
+            <span class="hero-stat-label">Products</span>
+          </div>
+          <div>
+            <span class="hero-stat-num">50K+</span>
+            <span class="hero-stat-label">Customers</span>
+          </div>
+          <div>
+            <span class="hero-stat-num">4.9★</span>
+            <span class="hero-stat-label">Rating</span>
+          </div>
+        </div>
+      </div>
+      <div class="col-lg-5 d-none d-lg-flex justify-content-center">
+        <div style="font-size:13rem; line-height:1;
+                    filter:drop-shadow(0 20px 40px rgba(0,0,0,0.2));">
+          🛍️
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── Categories ── -->
+<section class="py-5 bg-white" id="categories">
+  <div class="container">
+    <div class="section-title">Shop by Category</div>
+    <div class="section-divider"></div>
+    <div class="row g-3">
+      <div class="col-6 col-md-3 col-lg-2">
+        <a href="{% url 'store:product_list' %}" class="category-card">
+          <span class="category-icon">🛒</span>
+          <h6>All Items</h6>
+          <small>{{ products.count }} products</small>
+        </a>
+      </div>
+      {% for cat in categories %}
+      <div class="col-6 col-md-3 col-lg-2">
+        <a href="{{ cat.get_absolute_url }}" class="category-card">
+          <span class="category-icon">
+            {% if 'electronic' in cat.name|lower %}📱
+            {% elif 'cloth' in cat.name|lower or 'fashion' in cat.name|lower %}👗
+            {% elif 'book' in cat.name|lower %}📚
+            {% elif 'sport' in cat.name|lower %}⚽
+            {% elif 'home' in cat.name|lower %}🏠
+            {% elif 'beauty' in cat.name|lower %}💄
+            {% else %}🎁{% endif %}
+          </span>
+          <h6>{{ cat.name }}</h6>
+          <small>{{ cat.products.count }} products</small>
+        </a>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<!-- ── Featured Products ── -->
+{% if featured_products %}
+<section class="py-5" style="background:var(--primary-light);">
+  <div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-2">
+      <div>
+        <div class="section-title">⭐ Featured Products</div>
+        <div class="section-subtitle">Hand-picked favorites just for you</div>
+      </div>
+      <a href="{% url 'store:product_list' %}"
+         style="color:var(--primary); font-weight:600;
+                text-decoration:none; font-size:0.9rem;">
+        View All <i class="bi bi-arrow-right ms-1"></i>
+      </a>
+    </div>
+    <div class="section-divider"></div>
+    <div class="row g-4">
+      {% for product in featured_products %}
+      <div class="col-sm-6 col-lg-3">
+        <div class="product-card">
+          <div class="product-img-wrap">
+            {% if product.image %}
+              <img src="{{ product.image.url }}"
+                   alt="{{ product.name }}" loading="lazy"/>
+            {% else %}
+              <div class="product-img-placeholder">
+                {% if 'electronic' in product.category.name|lower %}📱
+                {% elif 'cloth' in product.category.name|lower %}👗
+                {% elif 'book' in product.category.name|lower %}📚
+                {% else %}🛍️{% endif %}
+              </div>
+            {% endif %}
+            <span class="badge-featured">⭐ Featured</span>
+            {% if product.discount_percentage %}
+              <span class="badge-discount">-{{ product.discount_percentage }}%</span>
+            {% endif %}
+          </div>
+          <div class="product-body">
+            <div class="product-category">{{ product.category.name }}</div>
+            <div class="product-name">
+              <a href="{{ product.get_absolute_url }}">{{ product.name }}</a>
+            </div>
+            <div class="product-price-wrap">
+              <span class="product-price">${{ product.price }}</span>
+              {% if product.old_price %}
+                <span class="product-old-price">${{ product.old_price }}</span>
+              {% endif %}
+            </div>
+            <a href="{{ product.get_absolute_url }}" class="btn-add-cart">
+              <i class="bi bi-cart-plus me-1"></i> Add to Cart
+            </a>
+          </div>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+{% endif %}
+
+{% endif %}
+
+<!-- ── Products Section ── -->
+<section class="py-5" id="products">
+  <div class="container">
+    <div class="row g-4">
+
+      <!-- Sidebar -->
+      <div class="col-lg-3">
+        <div class="filter-card">
+          <div class="filter-title">
+            <i class="bi bi-funnel me-2"></i>Filters
+          </div>
+
+          <!-- Search -->
+          <div class="filter-label">Search</div>
+          <form method="get" action="{% url 'store:product_list' %}">
+            <div style="display:flex; gap:0; border:2px solid var(--gray-200);
+                        border-radius:var(--radius-sm); overflow:hidden;">
+              <input type="text" name="q" placeholder="Search..."
+                     value="{{ query }}"
+                     style="flex:1; border:none; outline:none;
+                            padding:0.5rem 0.75rem; font-size:0.88rem;"/>
+              <button type="submit"
+                      style="background:var(--primary); color:white;
+                             border:none; padding:0.5rem 0.75rem; cursor:pointer;">
+                <i class="bi bi-search"></i>
+              </button>
+            </div>
+          </form>
+
+          <!-- Categories -->
+          <div class="filter-label" style="margin-top:1.25rem;">Categories</div>
+          <a href="{% url 'store:product_list' %}"
+             class="category-filter-link {% if not category and not query %}active{% endif %}">
+            All Products
+            <span class="filter-count">
+              {{ products.count }}
+            </span>
+          </a>
+          {% for cat in categories %}
+          <a href="{{ cat.get_absolute_url }}"
+             class="category-filter-link
+             {% if category.slug == cat.slug %}active{% endif %}">
+            {{ cat.name }}
+            <span class="filter-count">{{ cat.products.count }}</span>
+          </a>
+          {% endfor %}
+
+          <!-- Sort -->
+          <div class="filter-label" style="margin-top:1.25rem;">Sort By</div>
+          <form method="get" id="sort-form">
+            {% if query %}
+              <input type="hidden" name="q" value="{{ query }}"/>
+            {% endif %}
+            <select name="sort" onchange="document.getElementById('sort-form').submit()"
+                    style="width:100%; padding:0.5rem 0.75rem;
+                           border:2px solid var(--gray-200);
+                           border-radius:var(--radius-sm); font-size:0.88rem;
+                           outline:none; cursor:pointer; background:white;">
+              <option value="" {% if not sort %}selected{% endif %}>
+                Default
+              </option>
+              <option value="newest"
+                      {% if sort == 'newest' %}selected{% endif %}>
+                Newest First
+              </option>
+              <option value="price_low"
+                      {% if sort == 'price_low' %}selected{% endif %}>
+                Price: Low to High
+              </option>
+              <option value="price_high"
+                      {% if sort == 'price_high' %}selected{% endif %}>
+                Price: High to Low
+              </option>
+              <option value="name"
+                      {% if sort == 'name' %}selected{% endif %}>
+                Name A–Z
+              </option>
+            </select>
+          </form>
+
+          <!-- Clear Filters -->
+          {% if query or category or sort %}
+          <a href="{% url 'store:product_list' %}"
+             style="display:block; text-align:center; margin-top:1rem;
+                    color:var(--danger); font-size:0.85rem;
+                    text-decoration:none; font-weight:600;">
+            <i class="bi bi-x-circle me-1"></i> Clear Filters
+          </a>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- Products Grid -->
+      <div class="col-lg-9">
+
+        <!-- Header -->
+        <div class="d-flex justify-content-between align-items-center mb-4
+                    flex-wrap gap-2">
+          <div>
+            <div class="section-title mb-0">
+              {% if query %}
+                Search: "{{ query }}"
+              {% elif category %}
+                {{ category.name }}
+              {% else %}
+                All Products
+              {% endif %}
+            </div>
+            <div class="section-subtitle mb-0">
+              {{ products.count }} product{{ products.count|pluralize }} found
+            </div>
+          </div>
+        </div>
+
+        {% if products %}
+        <div class="row g-4">
+          {% for product in products %}
+          <div class="col-sm-6 col-xl-4">
+            <div class="product-card">
+              <div class="product-img-wrap">
+                {% if product.image %}
+                  <img src="{{ product.image.url }}"
+                       alt="{{ product.name }}" loading="lazy"/>
+                {% else %}
+                  <div class="product-img-placeholder">
+                    {% if 'electronic' in product.category.name|lower %}📱
+                    {% elif 'cloth' in product.category.name|lower %}👗
+                    {% elif 'book' in product.category.name|lower %}📚
+                    {% else %}🛍️{% endif %}
+                  </div>
+                {% endif %}
+
+                {% if not product.is_in_stock %}
+                  <span class="badge-out-of-stock">Out of Stock</span>
+                {% elif product.discount_percentage %}
+                  <span class="badge-discount">
+                    -{{ product.discount_percentage }}%
+                  </span>
+                {% endif %}
+
+                {% if product.featured %}
+                  <span class="badge-featured">⭐ Featured</span>
+                {% endif %}
+              </div>
+
+              <div class="product-body">
+                <div class="product-category">{{ product.category.name }}</div>
+                <div class="product-name">
+                  <a href="{{ product.get_absolute_url }}">{{ product.name }}</a>
+                </div>
+                <div class="product-price-wrap">
+                  <span class="product-price">${{ product.price }}</span>
+                  {% if product.old_price %}
+                    <span class="product-old-price">${{ product.old_price }}</span>
+                  {% endif %}
+                </div>
+                {% if product.is_in_stock %}
+                  <a href="{{ product.get_absolute_url }}" class="btn-add-cart">
+                    <i class="bi bi-cart-plus me-1"></i> Add to Cart
+                  </a>
+                {% else %}
+                  <span class="btn-add-cart disabled">Out of Stock</span>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+          {% endfor %}
+        </div>
+
+        {% else %}
+        <div class="empty-state">
+          <i class="bi bi-search d-block"></i>
+          <h4>No products found</h4>
+          {% if query %}
+            <p>No results for "<strong>{{ query }}</strong>".
+               Try a different search term.</p>
+          {% else %}
+            <p>No products in this category yet.</p>
+          {% endif %}
+          <a href="{% url 'store:product_list' %}" class="btn-primary-lg mt-3">
+            <i class="bi bi-arrow-left"></i> View All Products
+          </a>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</section>
+
+{% endblock %}

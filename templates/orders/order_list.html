@@ -1,0 +1,110 @@
+{% extends 'base.html' %}
+{% block title %}My Orders{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <div class="container">
+    <nav aria-label="breadcrumb">
+      <ol class="breadcrumb">
+        <li class="breadcrumb-item">
+          <a href="{% url 'store:product_list' %}">Home</a>
+        </li>
+        <li class="breadcrumb-item active">My Orders</li>
+      </ol>
+    </nav>
+  </div>
+</div>
+
+<section class="py-4">
+  <div class="container">
+    <div class="section-title">My Orders</div>
+    <div class="section-divider"></div>
+
+    {% if orders %}
+    <div style="display:flex; flex-direction:column; gap:1rem;">
+      {% for order in orders %}
+      <div style="background:var(--white); border-radius:var(--radius);
+                  box-shadow:var(--shadow-sm); border:1px solid var(--gray-200);
+                  padding:1.5rem;">
+        <div style="display:flex; justify-content:space-between;
+                    align-items:flex-start; flex-wrap:wrap; gap:1rem;">
+          <div>
+            <div style="font-family:'Poppins',sans-serif; font-weight:700;
+                        font-size:1.1rem; color:var(--primary);">
+              Order #{{ order.id }}
+            </div>
+            <div style="font-size:0.85rem; color:var(--gray-500); margin-top:0.2rem;">
+              <i class="bi bi-calendar me-1"></i>
+              {{ order.created_at|date:"F j, Y" }}
+              &nbsp;·&nbsp;
+              {{ order.items.count }} item{{ order.items.count|pluralize }}
+            </div>
+          </div>
+          <div style="display:flex; align-items:center; gap:1rem; flex-wrap:wrap;">
+            <span style="font-family:'Poppins',sans-serif; font-weight:800;
+                         font-size:1.2rem; color:var(--dark);">
+              ${{ order.total_price }}
+            </span>
+            {% if order.status == 'pending' %}
+              <span style="background:#fef3c7; color:#92400e; padding:4px 12px;
+                           border-radius:50px; font-size:0.8rem; font-weight:700;">
+                🕐 Pending
+              </span>
+            {% elif order.status == 'processing' %}
+              <span style="background:#dbeafe; color:#1e40af; padding:4px 12px;
+                           border-radius:50px; font-size:0.8rem; font-weight:700;">
+                ⚙️ Processing
+              </span>
+            {% elif order.status == 'shipped' %}
+              <span style="background:#e0e7ff; color:#3730a3; padding:4px 12px;
+                           border-radius:50px; font-size:0.8rem; font-weight:700;">
+                🚚 Shipped
+              </span>
+            {% elif order.status == 'delivered' %}
+              <span style="background:#d1fae5; color:#065f46; padding:4px 12px;
+                           border-radius:50px; font-size:0.8rem; font-weight:700;">
+                ✅ Delivered
+              </span>
+            {% elif order.status == 'cancelled' %}
+              <span style="background:#fee2e2; color:#991b1b; padding:4px 12px;
+                           border-radius:50px; font-size:0.8rem; font-weight:700;">
+                ❌ Cancelled
+              </span>
+            {% endif %}
+            <a href="{% url 'orders:order_detail' order.id %}"
+               style="background:var(--primary-light); color:var(--primary);
+                      padding:6px 16px; border-radius:var(--radius-sm);
+                      font-size:0.85rem; font-weight:600; text-decoration:none;">
+              View Details
+            </a>
+          </div>
+        </div>
+
+        <!-- Items Preview -->
+        <div style="margin-top:1rem; padding-top:1rem;
+                    border-top:1px solid var(--gray-100);
+                    display:flex; gap:0.5rem; flex-wrap:wrap;">
+          {% for item in order.items.all %}
+          <span style="background:var(--gray-100); color:var(--gray-700);
+                       padding:3px 10px; border-radius:50px; font-size:0.8rem;">
+            {{ item.product.name }} × {{ item.quantity }}
+          </span>
+          {% endfor %}
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+
+    {% else %}
+    <div class="empty-state">
+      <i class="bi bi-bag-x d-block"></i>
+      <h4>No orders yet</h4>
+      <p>You haven't placed any orders yet. Start shopping!</p>
+      <a href="{% url 'store:product_list' %}" class="btn-primary-lg mt-3">
+        <i class="bi bi-grid"></i> Browse Products
+      </a>
+    </div>
+    {% endif %}
+  </div>
+</section>
+{% endblock %}
